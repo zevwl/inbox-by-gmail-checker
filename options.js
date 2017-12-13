@@ -8,7 +8,8 @@ function restoreOptions() {
     useDesktopNotifications: true,
     showPageMenu: true,
     focusExistingInboxTab: false,
-    openInEmptyTab: false
+    openInEmptyTab: false,
+    updateTitle: false
   }, function (items) {
     document.getElementById('defaultUser').value = items.defaultUser;
     document.getElementById('pollInterval').value = items.pollInterval || 3;
@@ -18,6 +19,7 @@ function restoreOptions() {
     document.getElementById('showPageMenu').checked = !!items.showPageMenu;
     document.getElementById('useDesktopNotifications').checked = !!items.useDesktopNotifications;
     document.getElementById('openInEmptyTab').checked = !!items.openInEmptyTab;
+    document.getElementById('updateTitle').checked = !!items.updateTitle;
     chrome.permissions.contains({ permissions: ['tabs'] }, function (result) {
       document.getElementById('focusExistingInboxTabError').textContent = items.focusExistingInboxTab && !result ?
         'Error: "tabs" permission not granted. Re-check this option to try again.' :
@@ -40,6 +42,7 @@ function saveOptions(e) {
   var showPageMenu = document.getElementById('showPageMenu').checked;
   var focusExistingInboxTab = document.getElementById('focusExistingInboxTab').checked;
   var openInEmptyTab = document.getElementById('openInEmptyTab').checked;
+  var updateTitle = document.getElementById('updateTitle').checked;
   chrome.storage.sync.set({
     defaultUser: defaultUser,
     pollInterval: pollInterval,
@@ -49,7 +52,8 @@ function saveOptions(e) {
     useDesktopNotifications: useDesktopNotifications,
     showPageMenu: showPageMenu,
     focusExistingInboxTab: focusExistingInboxTab,
-    openInEmptyTab: openInEmptyTab
+    openInEmptyTab: openInEmptyTab,
+    updateTitle: updateTitle
   }, function () {
     // Update status to let user know options were saved.
     var status = document.getElementById('status');
@@ -80,6 +84,7 @@ function defaultOptions() {
   document.getElementById('showPageMenu').checked = true;
   document.getElementById('focusExistingInboxTab').checked = false;
   document.getElementById('openInEmptyTab').checked = false;
+  document.getElementById('updateTitle').checked = false;
 }
 
 function main() {

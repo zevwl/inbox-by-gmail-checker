@@ -28,7 +28,8 @@ var options = {
   useDesktopNotifications: true,
   showPageMenu: true,
   focusExistingInboxTab: false,
-  openInEmptyTab: false
+  openInEmptyTab: false,
+  updateTitle: false
 };
 
 // Legacy support for pre-event-pages
@@ -151,6 +152,25 @@ function updateIcon() {
       text: (quiet ? '' : unreadCount)
     });
   }
+}
+
+function updateTitle(count) {
+  chrome.tabs.query({ url: '*://inbox.google.com/*' }, function (tabs) {
+    tabs.forEach(tab => {
+      console.log('Found Inbox tab: ' + tab.url + '. Refreshing count in title...');
+      if (tab.title.startsWith('Inbox')) {
+        let updatedTitle = '';
+        if (count === 0) {
+          updatedTitle = tab.title.replace(/\(\d+\)/, '')
+        } else if (tab.title.match(/\(\d+\)/)) {
+          updatedTitle = tab.title.replace(/\(\d+\)/, `(${count})`)
+        } else {
+          updatedTitle = tab.title.replace('Inbox ', `Inbox (${count}) `)
+        }
+        chrome.tabs.executeScript(tab.id, { code: `document.title = "${updatedTitle}"`}, console.log)
+      }
+    });
+  });
 }
 
 function scheduleRequest() {
@@ -298,6 +318,9 @@ function updateUnreadCount(count) {
   var changed = localStorage.unreadCount != count || String(localStorage.quietTime) != String(quietTime);
   if (changed) {
     notify(count);
+  }
+  if (options.updateTitle){
+    updateTitle(count);
   }
   localStorage.unreadCount = count;
   localStorage.quietTime = quietTime;
@@ -519,7 +542,8 @@ function loadOptions(callback) {
     useDesktopNotifications: true,
     showPageMenu: true,
     focusExistingInboxTab: false,
-    openInEmptyTab: false
+    openInEmptyTab: false,
+    updateTitle: false
   }, function (items) {
     options.defaultUser = items.defaultUser;
     options.pollInterval = parseInt(items.pollInterval, 10) || 0;
@@ -530,6 +554,7 @@ function loadOptions(callback) {
     options.showPageMenu = !!items.showPageMenu;
     options.useDesktopNotifications = !!items.useDesktopNotifications;
     options.openInEmptyTab = !!items.openInEmptyTab;
+    options.updateTitle = !!items.updateTitle
     callback(true);
   });
 }
