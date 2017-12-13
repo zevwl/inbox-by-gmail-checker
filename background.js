@@ -462,9 +462,19 @@ function onNavigate(details) {
 }
 
 function onShareToInbox(info, tab) {
-  chrome.tabs.create({
-    url: getInboxUrl() + '?&subject=' + encodeURIComponent(tab.title) + '&body=' + encodeURIComponent(tab.url)
-  });
+  const composeUrl = getInboxUrl() + '?&subject=' + encodeURIComponent(tab.title) + '&body=' + encodeURIComponent(tab.url);
+  if (options.focusExistingInboxTab) {
+    chrome.tabs.query({ url: `*://inbox.google.com/${getUser()}*`, currentWindow: true }, tabs => {
+      const inboxTab = tabs[0]
+      if (inboxTab) {
+        chrome.tabs.update(inboxTab.id, { url: composeUrl, active: true })
+      } else {
+        chrome.tabs.create({ url: composeUrl });
+      }
+    })
+  } else {
+    chrome.tabs.create({ url: composeUrl });
+  }
 }
 
 function resetDistractionFreeMode() {
